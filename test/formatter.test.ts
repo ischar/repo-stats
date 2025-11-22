@@ -1,0 +1,72 @@
+import { describe, it, expect } from 'vitest';
+import { formatRepoStats } from '../src/cli/formatter';
+import type { RepoStats } from '../src/types/repoStats';
+
+const mockStats: RepoStats = {
+  totalRepos: 3,
+  totalStars: 10,
+  totalForks: 3,
+  languages: {
+    TypeScript: 1,
+    JavaScript: 1,
+    Unknown: 1,
+  },
+  topStarred: [
+    { name: 'repo-a', stars: 5 },
+    { name: 'repo-b', stars: 3 },
+  ],
+  topForked: [
+    { name: 'repo-a', forks: 2 },
+    { name: 'repo-c', forks: 1 },
+  ],
+  recentlyUpdated: [
+    { name: 'repo-a', updated_at: '2025-11-22T10:00:00Z' },
+    { name: 'repo-b', updated_at: '2025-11-20T02:00:00Z' },
+  ],
+};
+
+describe('formatRepoStats', () => {
+  const username = 'ischar';
+
+  it('prints header with username', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain(`📊 Repo stats for @${username}`);
+  });
+
+  it('prints summary section', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain('📌 Summary');
+    expect(output).toContain('Repositories');
+    expect(output).toContain('Stars');
+    expect(output).toContain('Forks');
+  });
+
+  it('prints language breakdown', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain('📝 Languages');
+    expect(output).toContain('TypeScript');
+    expect(output).toContain('JavaScript');
+    expect(output).toContain('Unknown');
+  });
+
+  it('prints top starred repositories', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain('⭐ Top starred repositories');
+    expect(output).toContain('repo-a');
+    expect(output).toContain('(5★)');
+  });
+
+  it('prints top forked repositories', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain('🍴 Top forked repositories');
+    expect(output).toContain('repo-a');
+    expect(output).toContain('(2 forks)');
+  });
+
+  it('prints recently updated repositories', () => {
+    const output = formatRepoStats(username, mockStats);
+    expect(output).toContain('⏱  Recently updated');
+    expect(output).toContain('repo-a');
+    expect(output).toContain('(2025-11-22T10:00:00Z)');
+  });
+});
