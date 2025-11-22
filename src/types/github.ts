@@ -1,7 +1,7 @@
 export interface GitHubRepo {
     name: string;
     full_name: string;
-    descriptoin: string | null;
+    description: string | null;
     stargazers_count: number;
     forks_count: number;
     watchers_count: number;
