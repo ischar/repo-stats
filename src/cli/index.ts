@@ -1,10 +1,10 @@
-// src/cli/index.ts
 import 'dotenv/config';
 import { fetchUserRepos } from '../github/fetcher';
+import { calculateRepoStats } from '../core/stats';
+import { formatRepoStats } from './formatter';
 
 async function main() {
   const [, , argUsername] = process.argv;
-
   const usernameEnv = process.env.GITHUB_USERNAME;
   const username = argUsername || usernameEnv;
 
@@ -21,17 +21,10 @@ async function main() {
 
   try {
     const repos = await fetchUserRepos(username);
+    const stats = calculateRepoStats(repos);
+    const output = formatRepoStats(username, stats);
 
-    console.log(`GitHub user: ${username}`);
-    console.log(`Public repositories: ${repos.length}`);
-    console.log('');
-
-    console.log('Some repositories:');
-    repos
-      .slice(0, 6)
-      .forEach((repo, index) => {
-        console.log(`  ${index + 1}. ${repo.name}`);
-      });
+    console.log(output);
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Failed to fetch repositories: ${error.message}`);
