@@ -29,8 +29,8 @@ describe('CLI - repo-stats', () => {
 
   it('should run CLI and output repository count', async () => {
     const { stdout } = await runCLI([username]);
-
-    expect(stdout).toContain(`GitHub user: ${username}`);
+    expect(stdout).toContain(`Repo stats for @${username}`);
+    expect(stdout).toContain('📌 Summary');
   });
 
   it('should print usage info when username is missing', async () => {
