@@ -9,6 +9,7 @@ export function calculateRepoStats(repos: GitHubRepo[]): RepoStats {
 
   let totalStars = 0;
   let totalForks = 0;
+
   const languages: Record<string, number> = {};
 
   for (const repo of repos) {
@@ -19,8 +20,30 @@ export function calculateRepoStats(repos: GitHubRepo[]): RepoStats {
     languages[lang] = (languages[lang] || 0) + 1;
   }
 
-  const topStarred = [...repos]
-    .filter((r) => !r.fork) 
+  const languagePercentages: Record<string, number> = {};
+  for (const [lang, count] of Object.entries(languages)) {
+    languagePercentages[lang] = Number(((count / totalRepos) * 100).toFixed(2));
+  }
+
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+
+  let last30Days = 0;
+  let last90Days = 0;
+
+  for (const repo of repos) {
+    const updated = new Date(repo.updated_at).getTime();
+    const diff = now - updated;
+
+    if (diff <= 30 * DAY) last30Days++;
+    if (diff <= 90 * DAY) last90Days++;
+  }
+
+  const activity = { last30Days, last90Days };
+
+  const filteredRepos = repos.filter((r) => !r.fork);
+
+  const topStarred = [...filteredRepos]
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, TOP_N)
     .map((repo) => ({
@@ -28,8 +51,7 @@ export function calculateRepoStats(repos: GitHubRepo[]): RepoStats {
       stars: repo.stargazers_count,
     }));
 
-  const topForked = [...repos]
-    .filter((r) => !r.fork)
+  const topForked = [...filteredRepos]
     .sort((a, b) => b.forks_count - a.forks_count)
     .slice(0, TOP_N)
     .map((repo) => ({
@@ -37,8 +59,7 @@ export function calculateRepoStats(repos: GitHubRepo[]): RepoStats {
       forks: repo.forks_count,
     }));
 
-  const recentlyUpdated = [...repos]
-    .filter((r) => !r.fork)
+  const recentlyUpdated = [...filteredRepos]
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     .slice(0, TOP_N)
     .map((repo) => ({
@@ -51,6 +72,8 @@ export function calculateRepoStats(repos: GitHubRepo[]): RepoStats {
     totalStars,
     totalForks,
     languages,
+    languagePercentages,
+    activity,
     topStarred,
     topForked,
     recentlyUpdated,
